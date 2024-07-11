@@ -1,6 +1,10 @@
 package main
 
-import tea "github.com/charmbracelet/bubbletea"
+import (
+	"fmt"
+	tea "github.com/charmbracelet/bubbletea"
+	"os"
+)
 
 type model struct {
 	choices  []string
@@ -19,7 +23,7 @@ func (m model) Init() tea.Cmd {
 	return nil
 }
 
-func (m model) Update(msg tea.Msg) (model, tea.Cmd) {
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -44,4 +48,35 @@ func (m model) Update(msg tea.Msg) (model, tea.Cmd) {
 		}
 	}
 	return m, nil
+}
+
+func (m model) View() string {
+	viewModel := "\nWhat do you plan to do today?\n\n"
+
+	for i, choice := range m.choices {
+		cursor := " "
+
+		if m.cursor == i {
+			cursor = ">"
+		}
+
+		selected := " "
+		if _, ok := m.selected[i]; ok {
+			selected = "x"
+		}
+
+		viewModel += fmt.Sprintf("%s [%s] %s\n", cursor, selected, choice)
+	}
+
+	viewModel += "\nPress q to quit.\n"
+
+	return viewModel
+}
+
+func main() {
+	p := tea.NewProgram(initialModel())
+	if _, err := p.Run(); err != nil {
+		fmt.Printf("An error has occurred: %v", err)
+		os.Exit(1)
+	}
 }
